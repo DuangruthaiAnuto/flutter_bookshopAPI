@@ -215,6 +215,7 @@ app.post(apiversion + '/order',  verify, function  (req, res) {
     var total =req.body.total;
     var details=req.body.details;
     //code for get mapDetails
+    var mapDetails = JSON.parse(details)
 
     res.setHeader('Content-Type', 'application/json');
     res.header("Access-Control-Allow-Origin", "*");
@@ -227,6 +228,19 @@ app.post(apiversion + '/order',  verify, function  (req, res) {
 
         if (error) throw error;
 
+        db.query('SELECT orderId as orderId FROM orders ORDER BY orderID DESC LIMIT 1', function(error, results, fields){
+        if (error) throw error; 
+        var orderId = Number(JSON.parse(JSON.stringify(results))[0]["orderId"]);
+        mapDetails.forEach(item => {
+                
+          db.query(`
+            INSERT INTO orderdetail (orderId, bookid, price, qty)  
+            VALUES(${orderId},${item.bookId}, ${item.price}, ${item.qty});`,
+            function (error, results, fields) {
+                if (error) throw error;
+            });
+          });
+        });
        //get last order id
        //insert order detail
 
